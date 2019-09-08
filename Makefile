@@ -1,29 +1,33 @@
+# PROGS=clienttest \
+#       dnstest\
+#       server\
+#       buffertest\
+#       udptest\
+#       asyncudptest\
+#       asyncudptest2\
+#       tutorial_timer1\
+#       tutorial_timer2\
+#       tutorial_timer3\
+#       tutorial_timer4\
+#       tutorial_timer5\
+#       tutorial_daytime1\
+#       tutorial_daytime2\
+#       tutorial_daytime3\
+#       tutorial_daytime4\
+#       tutorial_daytime5\
+#       tutorial_daytime6\
+#       example_allocation\
+#       example_buffer\
+#       example_chat_client\
+#       example_chat_server\
+#       example_echo_server_sync\
+#       example_echo_server_async\
+#       example_http_server
+
 PROGS=clienttest \
-      dnstest\
-      server\
-      buffertest\
       udptest\
       asyncudptest\
-      asyncudptest2\
-      tutorial_timer1\
-      tutorial_timer2\
-      tutorial_timer3\
-      tutorial_timer4\
-      tutorial_timer5\
-      tutorial_daytime1\
-      tutorial_daytime2\
-      tutorial_daytime3\
-      tutorial_daytime4\
-      tutorial_daytime5\
-      tutorial_daytime6\
-      example_allocation\
-      example_buffer\
-      example_chat_client\
-      example_chat_server\
-      example_echo_server_sync\
-      example_echo_server_async\
       example_http_server
-
 
       
 
