@@ -11,10 +11,13 @@ using namespace boost::asio;
 class udpserver
 {
     public:
-	udpserver(io_service & service):socket_(service,ip::udp::endpoint(ip::udp::v4(),1024))
+	udpserver(io_service & service):socket_(service,ip::udp::endpoint(ip::udp::v4(), 0))
     {
-	start_receive();
+		current_port = socket_.local_endpoint().port();
+		start_receive();
     }
+
+	unsigned short current_port;
 
     private:
 	void start_receive()
@@ -45,10 +48,11 @@ class udpserver
 		{
 		    std::string*ptr_string= new std::string(recv_buffer_,recv_buffer_+bytes_transferred);
 		    std::shared_ptr<std::string> message(ptr_string);
-		    socket_.async_send_to(boost::asio::buffer(recv_buffer_,bytes_transferred), remote_endpoint_,
-			    boost::bind(&udpserver::handle_send, this, message,
-			    boost::asio::placeholders::error,
-			    boost::asio::placeholders::bytes_transferred));
+			std::cout << *ptr_string; // print buffer
+		    // socket_.async_send_to(boost::asio::buffer(recv_buffer_,bytes_transferred), remote_endpoint_,
+			//     boost::bind(&udpserver::handle_send, this, message,
+			//     boost::asio::placeholders::error,
+			//     boost::asio::placeholders::bytes_transferred));
 
 		    start_receive();
 		}
@@ -62,12 +66,13 @@ class udpserver
 
 };
 
-int main()
+int main(int argc, char* argv[])
 {
     try
     {
 	io_service service;
 	udpserver server(service);
+	std::cout<<"now port is: "<<server.current_port<<std::endl;
 	service.run();
     }
     catch (std::exception& e)
