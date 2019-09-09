@@ -24,10 +24,12 @@
 #       example_echo_server_async\
 #       example_http_server
 
-PROGS=clienttest \
-      udptest\
-      asyncudptest\
-      example_http_server
+# PROGS=clienttest \
+#       udptest\
+#       asyncudptest\
+#       example_http_server
+
+PROGS=example_http_server
 
       
 
