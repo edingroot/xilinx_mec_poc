@@ -1,19 +1,19 @@
-# Xilinx MEC PoC Server
+# API Specification
 
-## Server Streaming URI
-
+### 1. Initialize Frame Streaming
+#### Request URI
 ```
-http://{your ip address}:{port}/udp_streaming/init
+http://{server ip address}:{port}/udp_streaming/init
 ```
 
-## Request Body Example
+#### Request body
 ```
 {
     "dl_udp_port": 1234
 }
 ```
 
-## Response Body Example
+#### Response body sample
 ```
 {
     ul_udp_port: 2345,
