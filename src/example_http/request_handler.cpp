@@ -6,6 +6,13 @@
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+using boost::property_tree::ptree;
+using boost::property_tree::read_json;
+using boost::property_tree::write_json;
+
 
 namespace http {
     namespace server {
@@ -33,6 +40,49 @@ namespace http {
 		rep = reply::stock_reply(reply::bad_request);
 		return;
 	    }
+
+		// std:: cout<<"Now the Path is: "<<request_path<<std::endl;
+
+		// Load request body for creating a UDP tunnel
+		if (request_path.compare("/upload") == 0){
+			/* std:: cout<<"Now the req.method is: "<<req.method<<std::endl; // GET or POST
+			for(header hdr : req.headers){
+				std:: cout<<"Now the req.headers[X].name is: "<<hdr.name<<std::endl;
+				std:: cout<<"Now the req.headers[X].value is: "<<hdr.value<<std::endl;
+			}
+			std:: cout<<"Now the req.method is: "<<req.method<<std::endl;
+			std:: cout<<"Now the req.body is: "<<req.body<<std::endl; */
+
+			ptree pt2;
+			// Decode request body
+			std::istringstream reqis(req.body);
+			read_json(reqis, pt2);
+			
+			/* std::string abc = pt2.get<std::string> ("abc");
+			 std:: cout << "abc is: " << abc << std::endl; */
+			
+			/* ptree root, arr, elem1, elem2;
+			elem1.put<int>("key0", 0);
+			elem1.put<bool>("key1", true);
+			elem2.put<float>("key2", 2.2f);
+			elem2.put<double>("key3", 3.3);
+			arr.push_back( std::make_pair("", elem1) );
+			arr.push_back( std::make_pair("", elem2) );
+			root.put_child("path1.path2", arr); */
+
+			// Encode response body
+			std::ostringstream rspis;
+			write_json(rspis, pt2);
+
+			rep.status = reply::ok;
+	    	rep.content = rspis.str();
+			rep.headers.resize(2);
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = std::to_string(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = "application/json";
+			return;
+		}
 
 	    // If path ends in slash (i.e. is a directory) then add "index.html".
 	    if (request_path[request_path.size() - 1] == '/')//如果请求url最后一个字符是/，那么加上一个index.html
