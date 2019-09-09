@@ -13,6 +13,8 @@ namespace http {
 	{
 	    std::string method;
 	    std::string uri;
+		// Modified for JSON by Roger
+		std::string body;
 	    int http_version_major;
 	    int http_version_minor;
 	    std::vector<header> headers;

@@ -265,8 +265,17 @@ namespace http {
 		    {
 			return bad;
 		    }
+		// case expecting_newline_3:
+		//     return (input == '\n') ? good : bad;
+
+		// Modified for JSON by Roger
 		case expecting_newline_3:
-		    return (input == '\n') ? good : bad;
+			if (input != '\r' && input != '\n'){
+				req.body.push_back(input);
+				return indeterminate;
+			} else {
+				return indeterminate;
+			}
 		default:
 		    return bad;
 	    }

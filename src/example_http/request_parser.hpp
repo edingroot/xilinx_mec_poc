@@ -37,7 +37,8 @@ namespace http {
 			    if (result == good || result == bad)
 				return std::make_tuple(result, begin);
 			}
-			return std::make_tuple(indeterminate, begin);
+			// Modified for JSON by Roger
+			return std::make_tuple(good, begin);
 		    }
 
 	    private:
