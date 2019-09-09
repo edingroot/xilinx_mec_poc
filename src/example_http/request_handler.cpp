@@ -43,7 +43,7 @@ namespace http {
 
 		// std:: cout<<"Now the Path is: "<<request_path<<std::endl;
 
-		// Load request body for creating a UDP tunnel
+		// Load request body for creating a UDP tunnel, Path POST /upload
 		if (request_path.compare("/upload") == 0){
 			/* std:: cout<<"Now the req.method is: "<<req.method<<std::endl; // GET or POST
 			for(header hdr : req.headers){
@@ -71,11 +71,11 @@ namespace http {
 			root.put_child("path1.path2", arr); */
 
 			// Encode response body
-			std::ostringstream rspis;
-			write_json(rspis, pt2);
+			std::ostringstream rspos;
+			write_json(rspos, pt2);
 
 			rep.status = reply::ok;
-	    	rep.content = rspis.str();
+	    	rep.content = rspos.str();
 			rep.headers.resize(2);
 			rep.headers[0].name = "Content-Length";
 			rep.headers[0].value = std::to_string(rep.content.size());

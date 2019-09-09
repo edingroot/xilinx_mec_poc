@@ -270,11 +270,18 @@ namespace http {
 
 		// Modified for JSON by Roger
 		case expecting_newline_3:
-			if (input != '\r' && input != '\n'){
+			if (input == '\n'){
+				state_ = expecting_newline_3_1;
+				return indeterminate;
+			} else {
+				return bad;
+			}
+		case expecting_newline_3_1:
+			if (input != EOF){
 				req.body.push_back(input);
 				return indeterminate;
 			} else {
-				return indeterminate;
+				return good;
 			}
 		default:
 		    return bad;

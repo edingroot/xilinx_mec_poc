@@ -81,7 +81,8 @@ namespace http {
 		    space_before_header_value,//之间的空行
 		    header_value,//首部value
 		    expecting_newline_2,
-		    expecting_newline_3
+		    expecting_newline_3,
+		    expecting_newline_3_1 // Modified for JSON by Roger
 		} state_;
 	};
 
