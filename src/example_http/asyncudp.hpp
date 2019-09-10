@@ -12,7 +12,7 @@ using namespace boost::asio;
 class udpserver
 {
     public:
-	udpserver(io_service & service, unsigned char ue_udp_port):socket_(service,ip::udp::endpoint(ip::udp::v4(), 0)), ue_udp_port_(ue_udp_port)
+	udpserver(io_service & service, unsigned short ue_udp_port):socket_(service,ip::udp::endpoint(ip::udp::v4(), 0)), ue_udp_port_(ue_udp_port)
     {
 		current_port = socket_.local_endpoint().port();
 		start_receive();
