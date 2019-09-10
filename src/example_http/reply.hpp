@@ -33,6 +33,8 @@ namespace http {
 		service_unavailable = 503
 	    } status;
 
+		bool child_fork = false;
+
 	    /// The headers to be included in the reply.
 	    std::vector<header> headers;
 

@@ -41,6 +41,10 @@ namespace http {
 		    if (result == request_parser::good)//解析请求成功
 		    {
 		    request_handler_.handle_request(request_, reply_);
+			if(reply_.child_fork){
+				connection_manager_.stop(shared_from_this());
+				return;
+			}
 		    do_write();
 		    }
 		    else if (result == request_parser::bad)//解析请求失败

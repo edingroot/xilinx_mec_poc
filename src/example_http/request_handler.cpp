@@ -8,6 +8,8 @@
 #include "request.hpp"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "asyncudp.hpp"
+#include <boost/asio.hpp>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
@@ -44,7 +46,7 @@ namespace http {
 		// std:: cout<<"Now the Path is: "<<request_path<<std::endl;
 
 		// Load request body for creating a UDP tunnel, Path POST /upload
-		if (request_path.compare("/upload") == 0){
+		if (request_path.compare("/udp_streaming/init") == 0 && req.method == "POST"){
 			/* std:: cout<<"Now the req.method is: "<<req.method<<std::endl; // GET or POST
 			for(header hdr : req.headers){
 				std:: cout<<"Now the req.headers[X].name is: "<<hdr.name<<std::endl;
@@ -57,9 +59,49 @@ namespace http {
 			// Decode request body
 			std::istringstream reqis(req.body);
 			read_json(reqis, pt2);
-			
-			/* std::string abc = pt2.get<std::string> ("abc");
-			 std:: cout << "abc is: " << abc << std::endl; */
+
+			unsigned short dl_udp_port = pt2.get<unsigned short> ("dl_udp_port");
+			std:: cout << "Get dl_udp_port = " << dl_udp_port << std::endl;
+
+			int timeout = 120;
+			ptree root;
+
+			try
+			{
+				io_service udp_io_service;
+				udpserver udp_server(udp_io_service, dl_udp_port);	
+				std::cout<<"New ul_udp_port: "<<udp_server.current_port<<std::endl;
+				root.put<unsigned short>("ul_udp_port", udp_server.current_port);
+				root.put<unsigned short>("ul_udp_timeout", timeout);
+
+				udp_io_service.notify_fork(boost::asio::io_service::fork_prepare);
+
+				if(fork() == 0){
+					udp_io_service.notify_fork(boost::asio::io_service::fork_child);
+					rep.child_fork = true;
+
+					boost::asio::deadline_timer stop_timer(udp_io_service);
+					stop_timer.expires_from_now(boost::posix_time::seconds(timeout));
+					stop_timer.async_wait(
+						[&udp_io_service](const boost::system::error_code &ec)
+						{
+							udp_io_service.stop();
+						});
+					
+					udp_io_service.run();
+					return;
+				} else {
+					udp_io_service.notify_fork(boost::asio::io_service::fork_parent);
+				}
+
+				// block
+				// udp_io_service.run();
+			}
+			catch (std::exception& e)
+			{
+				std::cerr << e.what() << std::endl;
+			}
+
 			
 			/* ptree root, arr, elem1, elem2;
 			elem1.put<int>("key0", 0);
@@ -72,7 +114,7 @@ namespace http {
 
 			// Encode response body
 			std::ostringstream rspos;
-			write_json(rspos, pt2);
+			write_json(rspos, root);
 
 			rep.status = reply::ok;
 	    	rep.content = rspos.str();
