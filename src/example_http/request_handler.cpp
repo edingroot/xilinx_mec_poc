@@ -58,7 +58,19 @@ namespace http {
 			ptree pt2;
 			// Decode request body
 			std::istringstream reqis(req.body);
-			read_json(reqis, pt2);
+
+			// Add checking for avoiding crash
+			try
+    		{
+				read_json(reqis, pt2);
+			}
+			catch(boost::property_tree::json_parser::json_parser_error &je)
+			{
+				std::cout << "Error parsing: " << je.filename() << " on line: " << je.line() << std::endl;
+				std::cout << je.message() << std::endl;
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
 
 			unsigned short dl_udp_port = pt2.get<unsigned short> ("dl_udp_port");
 			std:: cout << "Get dl_udp_port = " << dl_udp_port << std::endl;
