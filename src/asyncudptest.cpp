@@ -73,6 +73,15 @@ int main(int argc, char* argv[])
 	io_service service;
 	udpserver server(service);
 	std::cout<<"now port is: "<<server.current_port<<std::endl;
+
+	boost::asio::deadline_timer stop_timer(service);
+	stop_timer.expires_from_now(boost::posix_time::seconds(5));
+	stop_timer.async_wait(
+		[&service](const boost::system::error_code &ec)
+		{
+			service.stop();
+		});
+
 	service.run();
     }
     catch (std::exception& e)

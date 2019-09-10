@@ -29,7 +29,8 @@
 #       asyncudptest\
 #       example_http_server
 
-PROGS=example_http_server
+PROGS=example_http_server \
+      asyncudptest
 
       
 
