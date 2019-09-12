@@ -1,13 +1,13 @@
 # Xilinx MEC PoC Server
 
-## Build and Run (Run on the port 9999)
+## Build MEC HTTP Server and Run (Run on the port 9999)
 
 ```bash
 make
 ./bin/mec_http_server/mec_http_server 0.0.0.0 9999 .
 ```
 
-## Http Server Usage
+## MEC HTTP Server Usage
 ```
 Usage: http_server <address> <port> <doc_root>
   For IPv4, try:
@@ -16,11 +16,29 @@ Usage: http_server <address> <port> <doc_root>
     mec_http_server 0::0 80 .
 ```
 
-## Clean *.o and binary
-```
+## Clean MEC HTTP Server *.o and Binary
+```bash
 make clean
 ```
 
+## Build MEC Test Client and Run (OpenCV Required)
+```bash
+cd mec_test_client
+cmake .
+make
+./client 0.0.0.0 10000
+```
+
+## MEC Test Client Usage
+```
+Usage: client <address> <port>
+```
+
+## Clean MEC Test Client
+```bash
+make clean
+rm -rf Makefile CMakeCache.txt cmake_install.cmake CMakeFiles
+```
 
 ## Codes of Boost.ASIO leaning
 
