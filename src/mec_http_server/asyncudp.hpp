@@ -115,17 +115,17 @@ class udpserver
 					memcpy(&longbuf[i * CHUNK_PACK_SIZE], recv_buffer_, CHUNK_PACK_SIZE);
 				}
 
-				std::random_device rd;
-				std::default_random_engine gen = std::default_random_engine(rd());
-				std::uniform_int_distribution<int> dis(1,100000);
+				// std::random_device rd;
+				// std::default_random_engine gen = std::default_random_engine(rd());
+				// std::uniform_int_distribution<int> dis(1,100000);
 
-				// output to a jpg file
-				std:: ofstream frameof;
-				frameof.open("./image_"+to_string(dis(gen))+".jpg");
-				for(int i = 0 ; i < CHUNK_PACK_SIZE * total_pack ; i++){
-					frameof<<longbuf[i];
-				}
-				frameof.close();
+				// // output to a jpg file
+				// std:: ofstream frameof;
+				// frameof.open("./image_"+to_string(dis(gen))+".jpg");
+				// for(int i = 0 ; i < CHUNK_PACK_SIZE * total_pack ; i++){
+				// 	frameof<<longbuf[i];
+				// }
+				// frameof.close();
 
 
 				// connect to UE assigned UDP port
@@ -145,6 +145,8 @@ class udpserver
 					longbuf = NULL;
 				}
 				total_pack = -1;
+				
+				std::cout << "Success to transfer a jpg image" << std::endl;
 
 				start_receive();
 			}
