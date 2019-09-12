@@ -58,6 +58,13 @@ class udpserver
 
 				std::cout << "Start to receive jpg PACK" << std::endl;
 
+				if (bytes_transferred != HEAD_PACK_SIZE && bytes_transferred != CHUNK_PACK_SIZE) {
+					std::cerr << "Error: please check HEAD_PACK_SIZE and CHUNK_PACK_SIZE" << std::endl;
+					total_pack = -1;
+					start_receive();
+					return;
+				}
+
 				char *longbuf = NULL;
 				bool isExistedFirstPACK = false;
 
@@ -93,10 +100,8 @@ class udpserver
 					if (recvMsgSize == HEAD_PACK_SIZE) {
 						std::cerr << "Transfer uncompeletely: RESET" << std::endl;
 						// Free dynamic source and return to OS
-						if (longbuf != NULL) {
-							delete [] longbuf;
-							longbuf = NULL;
-						}
+						delete [] longbuf;
+						longbuf = NULL;
 						total_pack = ((int * ) recv_buffer_)[0];
 						start_receive();
 						return;
@@ -104,13 +109,11 @@ class udpserver
 
 					if (recvMsgSize != CHUNK_PACK_SIZE) {
 						std::cerr << "Received unexpected size pack: " << recvMsgSize << " : RESET" << std::endl;
-						if (longbuf != NULL) {
-							delete [] longbuf;
-							longbuf = NULL;
-						}
+						delete [] longbuf;
+						longbuf = NULL;
 						total_pack = -1;
 						start_receive();
-						continue;
+						return;
 					}
 					memcpy(&longbuf[i * CHUNK_PACK_SIZE], recv_buffer_, CHUNK_PACK_SIZE);
 				}
@@ -140,13 +143,11 @@ class udpserver
 				    boost::asio::placeholders::bytes_transferred));
 
 				// free dynamical source and return to OS and reset total_pack
-				if (longbuf != NULL) {
-					delete [] longbuf;
-					longbuf = NULL;
-				}
+				delete [] longbuf;
+				longbuf = NULL;
 				total_pack = -1;
 				
-				std::cout << "Success to transfer a jpg image" << std::endl;
+				std::cout << "Success to receive a jpg image" << std::endl;
 
 				start_receive();
 			}
