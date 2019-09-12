@@ -3,16 +3,20 @@
 #include <random>
 #include <memory>
 #include <cmath>
+#include <unistd.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/array.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "opencv2/opencv.hpp"
+using namespace cv;
 using namespace std;
 using namespace boost::asio;
 
+
 #define MAX_PACK 100
-#define CHUNK_PACK_SIZE 1000
+#define CHUNK_PACK_SIZE 8000
 #define BUFFER_MAX_LENGTH 65540
 #define HEAD_PACK_SIZE 4
 
@@ -24,6 +28,7 @@ class udpserver
 		total_pack = -1;
 		current_port = socket_.local_endpoint().port();
 		index = 1;
+		namedWindow("recv", WINDOW_AUTOSIZE);
 		start_receive();
     }
 	unsigned short current_port;
@@ -63,6 +68,7 @@ class udpserver
 
 				if (bytes_transferred != HEAD_PACK_SIZE && bytes_transferred != CHUNK_PACK_SIZE) {
 					std::cerr << "Error: please check HEAD_PACK_SIZE and CHUNK_PACK_SIZE" << std::endl;
+					std::cout << "Drop 1 packet, size = " << bytes_transferred << std::endl;
 					total_pack = -1;
 					start_receive();
 					return;
@@ -135,18 +141,44 @@ class udpserver
 
 
 				// output to a jpg file
-				std:: ofstream frameof;
-				std:: ostringstream index_with_zero;
-				index_with_zero << setw(6) << setfill('0') << index;
-				cout << "index = " << index_with_zero.str() << std::endl;
-				frameof.open("./image_"+index_with_zero.str()+".jpg");
-				cout << "Start to combine and total_length = " << total_length << endl;
-				for(int i = 0 ; i < total_length /*CHUNK_PACK_SIZE * total_pack*/ ; i++){
-					frameof<<longbuf[i];
-				}
-				frameof.close();
-				index += 1;
+				// std:: ofstream frameof;
+				// std:: ostringstream index_with_zero;
+				// index_with_zero << setw(6) << setfill('0') << index;
+				// cout << "index = " << index_with_zero.str() << std::endl;
+				// frameof.open("./image_"+index_with_zero.str()+".jpg");
+				// cout << "Start to combine and total_length = " << total_length << endl;
+				// for(int i = 0 ; i < total_length /*CHUNK_PACK_SIZE * total_pack*/ ; i++){
+				// 	frameof<<longbuf[i];
+				// }
+				// frameof.close();
+				// index += 1;
 
+				Mat rawData = Mat(1, total_length, CV_8UC1, longbuf);
+				Mat frame = imdecode(rawData, IMREAD_COLOR);
+				if (frame.size().width == 0) {
+					cerr << "decode failure!" << endl;
+					total_pack = -1;
+					longbuf = NULL;
+					total_pack = -1;
+					start_receive();
+					return;
+				}
+				try
+				{
+					imshow("recv", frame);
+					waitKey(1);
+					usleep(1);
+				}
+				catch(Exception& e)
+				{
+					cerr << "show failure!" << endl;
+					delete [] longbuf;
+					longbuf = NULL;
+					total_pack = -1;
+					start_receive();
+					return;
+				}
+				
 
 				// connect to UE assigned UDP port
 				boost::asio::ip::address_v4 ue_ipv4 = remote_endpoint_.address().to_v4();
