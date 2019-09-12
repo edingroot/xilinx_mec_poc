@@ -75,13 +75,13 @@ namespace http {
 			unsigned short dl_udp_port = pt2.get<unsigned short> ("dl_udp_port");
 			std:: cout << "Get dl_udp_port = " << dl_udp_port << std::endl;
 
-			int timeout = 120;
+			int timeout = 3600; //TODO: reason for bad performance, and now set 3600 timeout temporarily 
 			ptree root;
 
 			try
 			{
 				io_service udp_io_service;
-				udpserver udp_server(udp_io_service, dl_udp_port);	
+				udpserver udp_server(udp_io_service, dl_udp_port, timeout);	
 				std::cout<<"New ul_udp_port: "<<udp_server.current_port<<std::endl;
 				root.put<unsigned short>("ul_udp_port", udp_server.current_port);
 				root.put<unsigned short>("ul_udp_timeout", timeout);
@@ -93,13 +93,15 @@ namespace http {
 					rep.child_fork = true;
 
 					boost::asio::deadline_timer stop_timer(udp_io_service);
-					stop_timer.expires_from_now(boost::posix_time::seconds(timeout));
-					stop_timer.async_wait(
-						[&udp_io_service](const boost::system::error_code &ec)
-						{
-							udp_io_service.stop();
-						});
-					
+					// stop_timer.expires_from_now(boost::posix_time::seconds(timeout));
+					// stop_timer.async_wait(
+					// 	[&udp_io_service](const boost::system::error_code &ec)
+					// 	{
+					// 		cout << "Yes, We Stoooooooooooped"<< endl;
+					// 		udp_io_service.stop();
+					// 	});
+					udp_server.setTimer(stop_timer, udp_io_service);
+
 					udp_io_service.run();
 					return;
 				} else {

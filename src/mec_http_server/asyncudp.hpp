@@ -9,6 +9,9 @@
 #include <boost/thread.hpp>
 #include <boost/array.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "opencv2/opencv.hpp"
 using namespace cv;
 using namespace std;
@@ -23,14 +26,54 @@ using namespace boost::asio;
 class udpserver
 {
     public:
-	udpserver(io_service & service, unsigned short ue_udp_port):socket_(service,ip::udp::endpoint(ip::udp::v4(), 0)), ue_udp_port_(ue_udp_port)
+	udpserver(io_service & service, unsigned short ue_udp_port, int timeout):socket_(service,ip::udp::endpoint(ip::udp::v4(), 0)), ue_udp_port_(ue_udp_port), timeout_(timeout)
     {
+		boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    	uuid_string = boost::lexical_cast<std::string>(uuid);
 		total_pack = -1;
 		current_port = socket_.local_endpoint().port();
 		index = 1;
-		namedWindow("recv", WINDOW_AUTOSIZE);
+		isTimeout = new bool;
+		*(isTimeout) = false;
+		namedWindow("recv"+uuid_string, WINDOW_AUTOSIZE);
 		start_receive();
     }
+
+	void setTimer(boost::asio::deadline_timer &stop_timer, io_service& service){
+		stop_timer_ptr_ = &stop_timer;
+		io_service_ptr_ = &service;
+		(*isTimeout) = true;
+		(*stop_timer_ptr_).expires_from_now(boost::posix_time::seconds(timeout_));
+		(*stop_timer_ptr_).async_wait(
+			[this](const boost::system::error_code &ec)
+			{
+				if(*isTimeout){
+					cout << "Yes, We Stoooooooooooped"<< endl;
+					(*io_service_ptr_).stop();
+				} else {
+					cout << "Reset timer"<< endl;
+				}
+			});
+		// (*isTimeout) = false;
+	}
+
+	// void resetTimer(){
+	// 	(*isTimeout) = false;
+	// 	(*stop_timer_ptr_).expires_from_now(boost::posix_time::seconds(timeout_));
+	// 	(*stop_timer_ptr_).async_wait(
+	// 		[this](const boost::system::error_code &ec)
+	// 		{
+	// 			if((*isTimeout)){
+	// 				cout << "Yes, We Stoooooooooooped"<< endl;
+	// 				(*io_service_ptr_).stop();
+	// 			} else {
+	// 				cout << "Reset timer"<< endl;
+	// 			}
+	// 		});
+	// 	(*isTimeout) = false;
+	// }
+
+
 	unsigned short current_port;
 
     private:
@@ -165,7 +208,7 @@ class udpserver
 				}
 				try
 				{
-					imshow("recv", frame);
+					imshow("recv"+uuid_string, frame);
 					waitKey(1);
 					usleep(1);
 				}
@@ -197,6 +240,8 @@ class udpserver
 				total_pack = -1;
 				
 				std::cout << "Success to receive a jpg image" << std::endl;
+				// reset stop timer
+				// resetTimer(); // TODO: reason for bad performance, and now set 3600 timeout temporarily 
 
 				start_receive();
 			}
@@ -210,6 +255,11 @@ class udpserver
 	int total_pack;
 	int total_length;
 	int index;
+	boost::asio::deadline_timer *stop_timer_ptr_;
+	io_service *io_service_ptr_;
+	int timeout_;
+	bool *isTimeout;
+	string uuid_string;
 //	boost::array<char,1024>recv_buffer_;
 
 };
