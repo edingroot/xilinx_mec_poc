@@ -4,16 +4,16 @@
 
 ```bash
 make
-./bin/example_http/example_http_server 0.0.0.0 9999 .
+./bin/mec_http_server/mec_http_server 0.0.0.0 9999 .
 ```
 
 ## Http Server Usage
 ```
 Usage: http_server <address> <port> <doc_root>
   For IPv4, try:
-    example_http_server 0.0.0.0 80 .
+    mec_http_server 0.0.0.0 80 .
   For IPv6, try:
-    example_http_server 0::0 80 .
+    mec_http_server 0::0 80 .
 ```
 
 ## Clean *.o and binary
