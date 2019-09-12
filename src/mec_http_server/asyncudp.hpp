@@ -10,7 +10,7 @@ using namespace std;
 using namespace boost::asio;
 
 #define MAX_PACK 100
-#define CHUNK_PACK_SIZE 4096
+#define CHUNK_PACK_SIZE 1024
 #define BUFFER_MAX_LENGTH 65540
 #define HEAD_PACK_SIZE 4
 
