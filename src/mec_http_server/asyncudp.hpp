@@ -2,6 +2,7 @@
 #include <sstream>
 #include <random>
 #include <memory>
+#include <cmath>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
@@ -74,7 +75,7 @@ class udpserver
 					std::cout << "Normal case" << std::endl;
 					// total_pack = ((int * ) recv_buffer_)[0];
 					total_length = ((int * ) recv_buffer_)[0];
-					total_pack = total_length / CHUNK_PACK_SIZE;
+					total_pack = ceil((double) total_length / CHUNK_PACK_SIZE);
 					// longbuf = new char[CHUNK_PACK_SIZE * total_pack];
 					longbuf = new char[total_length];
 				} else if (total_pack != -1 && bytes_transferred == CHUNK_PACK_SIZE) { // Drop and renew case and put the first PACK into buffer
@@ -110,7 +111,7 @@ class udpserver
 						longbuf = NULL;
 						// total_pack = ((int * ) recv_buffer_)[0];
 						total_length = ((int * ) recv_buffer_)[0];
-						total_pack = total_length / CHUNK_PACK_SIZE;
+						total_pack = ceil((double) total_length / CHUNK_PACK_SIZE);
 						start_receive();
 						return;
 					}
