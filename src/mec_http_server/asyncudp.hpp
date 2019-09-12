@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <random>
 #include <memory>
 #include <boost/asio.hpp>
@@ -10,7 +11,7 @@ using namespace std;
 using namespace boost::asio;
 
 #define MAX_PACK 100
-#define CHUNK_PACK_SIZE 1024
+#define CHUNK_PACK_SIZE 1000
 #define BUFFER_MAX_LENGTH 65540
 #define HEAD_PACK_SIZE 4
 
@@ -21,6 +22,7 @@ class udpserver
     {
 		total_pack = -1;
 		current_port = socket_.local_endpoint().port();
+		index = 1;
 		start_receive();
     }
 	unsigned short current_port;
@@ -70,11 +72,15 @@ class udpserver
 
 				if (total_pack == -1 && bytes_transferred == HEAD_PACK_SIZE) { // Normal case
 					std::cout << "Normal case" << std::endl;
-					total_pack = ((int * ) recv_buffer_)[0];
-					longbuf = new char[CHUNK_PACK_SIZE * total_pack];
+					// total_pack = ((int * ) recv_buffer_)[0];
+					total_length = ((int * ) recv_buffer_)[0];
+					total_pack = total_length / CHUNK_PACK_SIZE;
+					// longbuf = new char[CHUNK_PACK_SIZE * total_pack];
+					longbuf = new char[total_length];
 				} else if (total_pack != -1 && bytes_transferred == CHUNK_PACK_SIZE) { // Drop and renew case and put the first PACK into buffer
 					std::cout << "Drop and renew PACK case" << std::endl;
-					longbuf = new char[CHUNK_PACK_SIZE * total_pack];
+					// longbuf = new char[CHUNK_PACK_SIZE * total_pack];
+					longbuf = new char[total_length];
 					memcpy(&longbuf[0 * CHUNK_PACK_SIZE], recv_buffer_, CHUNK_PACK_SIZE);
 					isExistedFirstPACK = true;
 				} else { // Other case: not allowed
@@ -102,7 +108,9 @@ class udpserver
 						// Free dynamic source and return to OS
 						delete [] longbuf;
 						longbuf = NULL;
-						total_pack = ((int * ) recv_buffer_)[0];
+						// total_pack = ((int * ) recv_buffer_)[0];
+						total_length = ((int * ) recv_buffer_)[0];
+						total_pack = total_length / CHUNK_PACK_SIZE;
 						start_receive();
 						return;
 					}
@@ -115,20 +123,28 @@ class udpserver
 						start_receive();
 						return;
 					}
-					memcpy(&longbuf[i * CHUNK_PACK_SIZE], recv_buffer_, CHUNK_PACK_SIZE);
+
+					if(i != total_pack - 1){
+						memcpy(&longbuf[i * CHUNK_PACK_SIZE], recv_buffer_, CHUNK_PACK_SIZE);
+					} else {
+						memcpy(&longbuf[i * CHUNK_PACK_SIZE], recv_buffer_, total_length % CHUNK_PACK_SIZE);
+					}
+					
 				}
 
-				// std::random_device rd;
-				// std::default_random_engine gen = std::default_random_engine(rd());
-				// std::uniform_int_distribution<int> dis(1,100000);
 
-				// // output to a jpg file
-				// std:: ofstream frameof;
-				// frameof.open("./image_"+to_string(dis(gen))+".jpg");
-				// for(int i = 0 ; i < CHUNK_PACK_SIZE * total_pack ; i++){
-				// 	frameof<<longbuf[i];
-				// }
-				// frameof.close();
+				// output to a jpg file
+				std:: ofstream frameof;
+				std:: ostringstream index_with_zero;
+				index_with_zero << setw(6) << setfill('0') << index;
+				cout << "index = " << index_with_zero.str() << std::endl;
+				frameof.open("./image_"+index_with_zero.str()+".jpg");
+				cout << "Start to combine and total_length = " << total_length << endl;
+				for(int i = 0 ; i < total_length /*CHUNK_PACK_SIZE * total_pack*/ ; i++){
+					frameof<<longbuf[i];
+				}
+				frameof.close();
+				index += 1;
 
 
 				// connect to UE assigned UDP port
@@ -159,6 +175,8 @@ class udpserver
 	ip::udp::endpoint remote_endpoint_;
 	char recv_buffer_[BUFFER_MAX_LENGTH];
 	int total_pack;
+	int total_length;
+	int index;
 //	boost::array<char,1024>recv_buffer_;
 
 };

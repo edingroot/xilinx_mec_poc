@@ -63,9 +63,11 @@ int main(int argc, char * argv[]) {
             imencode(".jpg", send, encoded, compression_params);
             // imshow("send", send);
             int total_pack = 1 + (encoded.size() - 1) / PACK_SIZE;
+            int total_length = encoded.size();
 
             int ibuf[1];
-            ibuf[0] = total_pack;
+            // ibuf[0] = total_pack;
+            ibuf[0] = total_length;
             sock.sendTo(ibuf, sizeof(int), servAddress, servPort);
 
             for (int i = 0; i < total_pack; i++)
