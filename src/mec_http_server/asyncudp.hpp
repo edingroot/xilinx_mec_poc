@@ -13,6 +13,27 @@
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "opencv2/opencv.hpp"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+using boost::property_tree::ptree;
+using boost::property_tree::read_json;
+using boost::property_tree::write_json;
+
+// For xilinux Urtra 96 FPGA board 
+#ifdef DPU
+#include <glog/logging.h>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <xilinx/ai/classification.hpp>
+#include <xilinx/ai/nnpp/classification.hpp>
+#include <xilinx/ai/demo.hpp>
+#include "process_result_for_boost_server.hpp"
+#endif
+// END
+
+
+
 using namespace cv;
 using namespace std;
 using namespace boost::asio;
@@ -35,7 +56,7 @@ class udpserver
 		index = 1;
 		isTimeout = new bool;
 		*(isTimeout) = false;
-		namedWindow("recv"+uuid_string, WINDOW_AUTOSIZE);
+		namedWindow("recv_"+uuid_string, WINDOW_AUTOSIZE);
 		start_receive();
     }
 
@@ -208,9 +229,25 @@ class udpserver
 				}
 				try
 				{
-					imshow("recv"+uuid_string, frame);
+#ifdef DPU
+					std::string frame_result_text = xilinx::ai::main_for_jpeg_demo_for_boost_server(
+					frame,
+					[] {
+						return xilinx::ai::Classification::create(xilinx::ai::CLASSIFICATION_RESNET_50);
+					},
+					process_result);
+
+					// imshow("recv_"+uuid_string, frame_result);
+					// waitKey(1);
+					// usleep(1);
+#elif CAFF
+					// TODO
+#else
+					imshow("recv_"+uuid_string, frame);
 					waitKey(1);
 					usleep(1);
+#endif
+
 				}
 				catch(Exception& e)
 				{
@@ -228,13 +265,25 @@ class udpserver
 				boost::asio::ip::udp::endpoint ue_udp_endpoint(ue_ipv4, ue_udp_port_);
 
 				// send data to UE assigned UDP port
-				std::string recv_buffer_rsp_ = "OK No Problem\n";
+				std::string recv_buffer_rsp_;
+#ifdef DPU
+				ptree root;
+				root.put<std::string>("rawdata", frame_result_text);
+				std::ostringstream rspos;
+				write_json(rspos, root);
+				recv_buffer_rsp_ = rspos.str();
+#elif CAFF
+				// TODO
+				recv_buffer_rsp_ = "OK No Problem\n";
+#else
+				recv_buffer_rsp_ = "OK No Problem\n";
+#endif
 				socket_.async_send_to(boost::asio::buffer(recv_buffer_rsp_, recv_buffer_rsp_.size()), ue_udp_endpoint,
 				    boost::bind(&udpserver::handle_send, this, message,
 				    boost::asio::placeholders::error,
 				    boost::asio::placeholders::bytes_transferred));
 
-				// free dynamical source and return to OS and reset total_pack
+				// free dynamic source and return to OS and reset total_pack
 				delete [] longbuf;
 				longbuf = NULL;
 				total_pack = -1;
