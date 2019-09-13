@@ -10,12 +10,12 @@ make -j3 #j3 means using 3 threads to compile
 `Please replace the demo.hpp in the right place in U96_data folder`
 ```bash
 make DPU -j3 
-./bin/mec_http_server/mec_http_server_general 0.0.0.0 9999 .
+./bin/mec_http_server/mec_http_server_dpu 0.0.0.0 9999 .
 ```
 ### For Caffe
 ```bash
 make CAFF -j3 
-./bin/mec_http_server/mec_http_server_general 0.0.0.0 9999 .
+./bin/mec_http_server/mec_http_server_caff 0.0.0.0 9999 .
 ```
 
 ## MEC HTTP Server Usage
