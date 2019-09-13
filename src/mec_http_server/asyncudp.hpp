@@ -227,10 +227,11 @@ class udpserver
 					start_receive();
 					return;
 				}
+				std::string frame_result_text;
 				try
 				{
 #ifdef DPU
-					std::string frame_result_text = xilinx::ai::main_for_jpeg_demo_for_boost_server(
+					frame_result_text = xilinx::ai::main_for_jpeg_demo_for_boost_server(
 					frame,
 					[] {
 						return xilinx::ai::Classification::create(xilinx::ai::CLASSIFICATION_RESNET_50);
