@@ -266,17 +266,21 @@ class udpserver
 
 				// send data to UE assigned UDP port
 				std::string recv_buffer_rsp_;
-#ifdef DPU
 				ptree root;
-				root.put<std::string>("rawdata", frame_result_text);
 				std::ostringstream rspos;
+#ifdef DPU
+				root.put<std::string>("rawdata", frame_result_text);
 				write_json(rspos, root);
 				recv_buffer_rsp_ = rspos.str();
 #elif CAFF
 				// TODO
-				recv_buffer_rsp_ = "OK No Problem\n";
+				root.put<std::string>("rawdata", "OK No Problem\n");				
+				write_json(rspos, root);
+				recv_buffer_rsp_ = rspos.str();
 #else
-				recv_buffer_rsp_ = "OK No Problem\n";
+				root.put<std::string>("rawdata", "OK No Problem\n");				
+				write_json(rspos, root);
+				recv_buffer_rsp_ = rspos.str();
 #endif
 				socket_.async_send_to(boost::asio::buffer(recv_buffer_rsp_, recv_buffer_rsp_.size()), ue_udp_endpoint,
 				    boost::bind(&udpserver::handle_send, this, message,
